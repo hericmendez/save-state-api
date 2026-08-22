@@ -33,3 +33,8 @@ export const gameIdAndListIdParamSchema = z.object({
 export const listGamesInListQuerySchema = listGamesQuerySchema.omit({
   listId: true,
 });
+
+export type CreateGameListInput = z.infer<typeof createGameListSchema>;
+export type UpdateGameListInput = z.infer<typeof updateGameListSchema>;
+export type ListGameListsQuery = z.infer<typeof listGameListsQuerySchema>;
+export type ListGamesInListQuery = z.infer<typeof listGamesInListQuerySchema>;

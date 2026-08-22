@@ -5,8 +5,12 @@ import { UserGame } from "../models/user-game";
 import {
   listGames,
   type PaginatedUserGame,
-  type ListGamesFilters,
+  type GameQuery,
 } from "./game.service";
+import type {
+  ListGameListsQuery,
+  ListGamesInListQuery,
+} from "../schemas/game-list.schema";
 import type { UserGameDocument } from "../models/user-game";
 
 async function findOwnedListOrThrow(
@@ -40,12 +44,7 @@ export interface PaginatedGameList {
 
 export async function listGameLists(
   userId: string,
-  filters: {
-    page: number;
-    limit: number;
-    search?: string;
-    withCount: boolean;
-  },
+  filters: ListGameListsQuery,
 ): Promise<PaginatedGameList> {
   const query: Record<string, unknown> = {
     userId: new Types.ObjectId(userId),
@@ -155,7 +154,7 @@ export async function deleteGameList(userId: string, listId: string): Promise<vo
 export async function listGamesInList(
   userId: string,
   listId: string,
-  filters: Omit<ListGamesFilters, "listId">,
+  filters: ListGamesInListQuery,
 ): Promise<PaginatedUserGame> {
   await findOwnedListOrThrow(userId, listId);
   return listGames(userId, { ...filters, listId });

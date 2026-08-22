@@ -1,5 +1,5 @@
 import { UserGame, GAME_STATUSES } from "../models/user-game";
-import { resolveGameQuery, type ListGamesFilters } from "./game.service";
+import { resolveGameQuery, type GameQuery } from "./game.service";
 
 type Distribution = Record<string, number>;
 
@@ -32,7 +32,7 @@ function toDistribution(
 
 export async function getGameStats(
   userId: string,
-  filters: Omit<ListGamesFilters, "page" | "limit">,
+  filters: GameQuery,
 ): Promise<GameStats> {
   const query = await resolveGameQuery(userId, filters);
 

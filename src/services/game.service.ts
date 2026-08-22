@@ -4,25 +4,16 @@ import slugify from "slugify";
 import { ApiError } from "../utils/api-error";
 import { GlobalGame, type GlobalGameDocument } from "../models/game";
 import { UserGame, type UserGameDocument } from "../models/user-game";
+import type {
+  CreateGameInput,
+  ListGamesQuery,
+  UpdateGameInput,
+} from "../schemas/game.schema";
 
-export type ListGamesFilters = {
-  page: number;
-  limit: number;
-  search?: string;
-  listId?: string;
-  genre?: string;
-  platform?: string;
-  developer?: string;
-  publisher?: string;
-  releaseDateFrom?: Date;
-  releaseDateTo?: Date;
-  hoursPlayedMin?: number;
-  hoursPlayedMax?: number;
-  timesFinishedMin?: number;
-  timesFinishedMax?: number;
-  ratingMin?: number;
-  ratingMax?: number;
-};
+export type ListGamesFilters = ListGamesQuery;
+export type GameQuery = Omit<ListGamesQuery, "page" | "limit">;
+export type CreateGameData = CreateGameInput;
+export type UpdateGameData = UpdateGameInput;
 
 export interface PaginatedUserGame {
   data: (ReturnType<UserGameDocument["toObject"]> & {
@@ -40,7 +31,7 @@ export interface PaginatedUserGame {
 
 function buildFilters(
   userId: string,
-  filters: ListGamesFilters,
+  filters: GameQuery,
 ): FilterQuery<UserGameDocument> {
   const query: FilterQuery<UserGameDocument> = {
     userId: new Types.ObjectId(userId),
@@ -84,7 +75,7 @@ function buildFilters(
 }
 
 function buildGlobalGameFilters(
-  filters: ListGamesFilters,
+  filters: GameQuery,
 ): FilterQuery<GlobalGameDocument> {
   const query: FilterQuery<GlobalGameDocument> = {};
 
@@ -138,11 +129,9 @@ async function findOwnedUserGameOrThrow(
 
 export async function resolveGameQuery(
   userId: string,
-  filters: Omit<ListGamesFilters, "page" | "limit">,
+  filters: GameQuery,
 ): Promise<FilterQuery<UserGameDocument>> {
-  const globalFilter = buildGlobalGameFilters(
-    filters as ListGamesFilters,
-  );
+  const globalFilter = buildGlobalGameFilters(filters);
   let matchingGameIds: Types.ObjectId[] | null = null;
 
   if (Object.keys(globalFilter).length > 0) {
@@ -150,10 +139,7 @@ export async function resolveGameQuery(
     matchingGameIds = games.map((game) => game._id as Types.ObjectId);
   }
 
-  const query = buildFilters(
-    userId,
-    { ...filters, page: 1, limit: 1 } as ListGamesFilters,
-  );
+  const query = buildFilters(userId, filters);
   if (matchingGameIds) {
     query.gameId = { $in: matchingGameIds };
   }
@@ -207,25 +193,9 @@ export async function getGame(
   };
 }
 
-export async function createGame(input: {
-  userId: string;
-  gameId?: string;
-  game?: {
-    name: string;
-    cover?: string;
-    genres?: string[];
-    platforms?: string[];
-    developers?: string[];
-    publishers?: string[];
-    releaseDate?: Date;
-    summary?: string;
-  };
-  status?: string;
-  hoursPlayed?: number;
-  timesFinished?: number;
-  rating?: number;
-  review?: string;
-}): Promise<UserGameDocument & { game: GlobalGameDocument }> {
+export async function createGame(
+  input: { userId: string } & CreateGameData,
+): Promise<UserGameDocument & { game: GlobalGameDocument }> {
   let globalGame: GlobalGameDocument | null;
 
   if (input.gameId) {
@@ -289,23 +259,7 @@ export async function createGame(input: {
 export async function updateGame(
   userId: string,
   gameId: string,
-  input: {
-    game?: {
-      name?: string;
-      cover?: string;
-      genres?: string[];
-      platforms?: string[];
-      developers?: string[];
-      publishers?: string[];
-      releaseDate?: Date | null;
-      summary?: string;
-    };
-    status?: string;
-    hoursPlayed?: number;
-    timesFinished?: number;
-    rating?: number | null;
-    review?: string | null;
-  },
+  input: UpdateGameData,
 ): Promise<UserGameDocument & { game: GlobalGameDocument }> {
   const userGame = await findOwnedUserGameOrThrow(userId, gameId);
 

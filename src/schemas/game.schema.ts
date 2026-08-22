@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { GAME_STATUSES } from "../models/user-game";
+
+const statusEnum = z.enum(GAME_STATUSES);
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, "must be a valid id");
 
@@ -17,7 +20,7 @@ export const createGameSchema = z
         summary: z.string().trim().max(20000).optional(),
       })
       .optional(),
-    status: z.enum(["backlog", "playing", "finished", "dropped", "wishlist"]).optional(),
+    status: statusEnum.optional(),
     hoursPlayed: z.number().min(0).max(100000).optional(),
     timesFinished: z.number().int().min(0).max(10000).optional(),
     rating: z.number().min(0).max(10).optional(),
@@ -41,7 +44,7 @@ export const updateGameSchema = z
         summary: z.string().trim().max(20000).optional(),
       })
       .optional(),
-    status: z.enum(["backlog", "playing", "finished", "dropped", "wishlist"]).optional(),
+    status: statusEnum.optional(),
     hoursPlayed: z.number().min(0).max(100000).optional(),
     timesFinished: z.number().int().min(0).max(10000).optional(),
     rating: z.number().min(0).max(10).nullable().optional(),
@@ -80,3 +83,7 @@ export const listGamesQuerySchema = z.object({
 });
 
 export const gameIdParamSchema = z.object({ gameId: objectId });
+
+export type CreateGameInput = z.infer<typeof createGameSchema>;
+export type UpdateGameInput = z.infer<typeof updateGameSchema>;
+export type ListGamesQuery = z.infer<typeof listGamesQuerySchema>;

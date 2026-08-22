@@ -362,3 +362,17 @@ src/
 docs/                    # especificação arquitetural (fonte da verdade)
 tests/                   # Vitest + Supertest + MongoDB em memória
 ```
+
+# TODO — Melhorias técnicas
+
+| Arquivo | Melhoria sugerida |
+|---|---|
+| `src/controllers/game.controller.ts` | Casts restantes `req.query as unknown as ...` em coleções — express@5 não preserva tipos de query; considerar parser próprio ou `z.infer` + parse manual |
+| `src/services/game.service.ts` | Casts residuais em `createGame`/`updateGame` (`as UserGameDocument & { game }`, `globalGame!`) — modelar retorno com tipo próprio em vez de cast |
+| `src/services/game.service.ts:262` | Dedupe manual por `name + source:"manual"` pode sofrer race condition; adicionar unique index em `slug` e tratar erro 11000 na criação do GlobalGame |
+| `src/schemas/game.schema.ts` | Campos de metadata duplicados entre `createGameSchema.game` e `updateGameSchema.game` — extrair objetos base compartilhados |
+| `src/middleware/auth.middleware.ts` | Cookie `maxAge` hardcoded (7d) deveria derivar de `env.JWT_EXPIRES_IN` |
+| `src/services/stats.service.ts` | `$lookup`/`$unwind` roda sobre toda a biblioteca filtrada; avaliar índices compostos conforme crescimento |
+| `src/app.ts` | Adicionar rate limiting nas rotas de auth (`/register`, `/login`) antes de expor publicamente |
+| `tests/helpers.ts` | Usuários fixos impedem paralelismo das suítes; gerar dados únicos por teste se o pool mudar de `singleFork` |
+| Integração ATP (docs §30) | Fora de escopo até o core fechar; definir interface API ↔ ATP quando iniciada |
