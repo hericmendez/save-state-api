@@ -21,13 +21,26 @@ export function signToken(payload: { userId: string }): string {
   });
 }
 
+const MS_PER_UNIT: Record<string, number> = {
+  s: 1000,
+  m: 60 * 1000,
+  h: 60 * 60 * 1000,
+  d: 24 * 60 * 60 * 1000,
+};
+
+function parseExpiresToMs(value: string): number {
+  const match = /^(\d+)([smhd])$/.exec(value.trim());
+  if (!match) return 7 * 24 * 60 * 60 * 1000;
+  return Number(match[1]) * MS_PER_UNIT[match[2]];
+}
+
 export function setAuthCookie(res: Response, token: string): void {
   res.cookie(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
     secure: env.NODE_ENV === "production",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: parseExpiresToMs(env.JWT_EXPIRES_IN),
   });
 }
 

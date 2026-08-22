@@ -13,7 +13,6 @@ const GlobalGameSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      index: true,
     },
     source: {
       type: String,
@@ -31,6 +30,11 @@ const GlobalGameSchema = new Schema(
     summary: { type: String, trim: true },
   },
   { timestamps: true },
+);
+
+GlobalGameSchema.index(
+  { name: 1 },
+  { unique: true, partialFilterExpression: { source: "manual" } },
 );
 
 export interface GlobalGameDocument extends mongoose.Document {

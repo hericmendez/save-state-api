@@ -4,6 +4,16 @@ import { ApiError } from "../utils/api-error";
 
 type Part = "body" | "query" | "params";
 
+declare module "express-serve-static-core" {
+  interface Request {
+    validated?: Partial<Record<Part, unknown>>;
+  }
+}
+
+export function validated<T>(req: Request, part: Part): T {
+  return (req.validated?.[part] ?? req[part]) as T;
+}
+
 function formatIssues(issues: { path: (string | number | symbol)[]; message: string }[]): string {
   return issues
     .map((issue) => `${issue.path.join(".") || "value"}: ${issue.message}`)
@@ -24,6 +34,7 @@ export function validate(schemas: Partial<Record<Part, ZodTypeAny>>) {
           );
         }
         Object.defineProperty(req, part, { value: result.data });
+        req.validated = { ...req.validated, [part]: result.data };
       }
       next();
     } catch (error) {

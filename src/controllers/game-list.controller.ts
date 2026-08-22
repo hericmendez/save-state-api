@@ -11,6 +11,7 @@ import {
   updateGameList,
 } from "../services/game-list.service";
 import { ApiError } from "../utils/api-error";
+import { validated } from "../middleware/validation.middleware";
 import {
   gameIdAndListIdParamSchema,
   listIdParamSchema,
@@ -32,7 +33,7 @@ export async function list(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await listGameLists(
       requireUserId(req),
-      req.query as unknown as ListGameListsQuery,
+      validated<ListGameListsQuery>(req, "query"),
     );
     res.status(200).json(result);
   } catch (error) {
@@ -42,7 +43,7 @@ export async function list(req: Request, res: Response, next: NextFunction) {
 
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
-    const body = req.body as CreateGameListInput;
+    const body = validated<CreateGameListInput>(req, "body");
     const list = await createGameList(requireUserId(req), body);
     res.status(201).json({ data: list });
   } catch (error) {
@@ -52,7 +53,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
 
 export async function getOne(req: Request, res: Response, next: NextFunction) {
   try {
-    const { listId } = req.params as ListIdParams;
+    const { listId } = validated<ListIdParams>(req, "params");
     const list = await getGameList(requireUserId(req), listId);
     res.status(200).json({ data: list });
   } catch (error) {
@@ -62,8 +63,8 @@ export async function getOne(req: Request, res: Response, next: NextFunction) {
 
 export async function update(req: Request, res: Response, next: NextFunction) {
   try {
-    const { listId } = req.params as ListIdParams;
-    const body = req.body as UpdateGameListInput;
+    const { listId } = validated<ListIdParams>(req, "params");
+    const body = validated<UpdateGameListInput>(req, "body");
     const list = await updateGameList(requireUserId(req), listId, body);
     res.status(200).json({ data: list });
   } catch (error) {
@@ -73,7 +74,7 @@ export async function update(req: Request, res: Response, next: NextFunction) {
 
 export async function remove(req: Request, res: Response, next: NextFunction) {
   try {
-    const { listId } = req.params as ListIdParams;
+    const { listId } = validated<ListIdParams>(req, "params");
     await deleteGameList(requireUserId(req), listId);
     res.status(204).send();
   } catch (error) {
@@ -83,8 +84,8 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
 
 export async function listGames(req: Request, res: Response, next: NextFunction) {
   try {
-    const { listId } = req.params as ListIdParams;
-    const query = req.query as unknown as ListGamesInListQuery;
+    const { listId } = validated<ListIdParams>(req, "params");
+    const query = validated<ListGamesInListQuery>(req, "query");
     const result = await listGamesInList(requireUserId(req), listId, query);
     res.status(200).json(result);
   } catch (error) {
@@ -94,7 +95,7 @@ export async function listGames(req: Request, res: Response, next: NextFunction)
 
 export async function addGame(req: Request, res: Response, next: NextFunction) {
   try {
-    const { gameId, listId } = req.params as GameAndListParams;
+    const { gameId, listId } = validated<GameAndListParams>(req, "params");
     await addListToGame(requireUserId(req), gameId, listId);
     res.status(204).send();
   } catch (error) {
@@ -104,7 +105,7 @@ export async function addGame(req: Request, res: Response, next: NextFunction) {
 
 export async function removeGame(req: Request, res: Response, next: NextFunction) {
   try {
-    const { gameId, listId } = req.params as GameAndListParams;
+    const { gameId, listId } = validated<GameAndListParams>(req, "params");
     await removeListFromGame(requireUserId(req), gameId, listId);
     res.status(204).send();
   } catch (error) {

@@ -1,6 +1,8 @@
 import { UserGame, GAME_STATUSES } from "../models/user-game";
 import { resolveGameQuery, type GameQuery } from "./game.service";
 
+export type GameStatsFilters = GameQuery;
+
 type Distribution = Record<string, number>;
 
 export interface GameStats {

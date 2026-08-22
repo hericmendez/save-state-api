@@ -16,9 +16,7 @@ export type CreateGameData = CreateGameInput;
 export type UpdateGameData = UpdateGameInput;
 
 export interface PaginatedUserGame {
-  data: (ReturnType<UserGameDocument["toObject"]> & {
-    game: GlobalGameDocument | null;
-  })[];
+  data: UserGameWithGame[];
   pagination: {
     page: number;
     limit: number;
@@ -28,6 +26,10 @@ export interface PaginatedUserGame {
     hasPreviousPage: boolean;
   };
 }
+
+type UserGameWithGame = ReturnType<UserGameDocument["toObject"]> & {
+  game: GlobalGameDocument;
+};
 
 function buildFilters(
   userId: string,
@@ -158,7 +160,7 @@ export async function listGames(
       .sort({ updatedAt: -1 })
       .skip((filters.page - 1) * filters.limit)
       .limit(filters.limit)
-      .populate("gameId"),
+      .populate<{ gameId: GlobalGameDocument | null }>("gameId"),
   ]);
 
   const totalPages = Math.ceil(total / filters.limit);
@@ -166,7 +168,7 @@ export async function listGames(
   return {
     data: userGames.map((userGame) => ({
       ...userGame.toObject(),
-      game: (userGame.gameId as unknown as GlobalGameDocument) ?? null,
+      game: userGame.gameId!,
     })),
     pagination: {
       page: filters.page,
@@ -182,20 +184,18 @@ export async function listGames(
 export async function getGame(
   userId: string,
   gameId: string,
-): Promise<UserGameDocument & { game: GlobalGameDocument }> {
+): Promise<UserGameWithGame> {
   const userGame = await findOwnedUserGameOrThrow(userId, gameId);
   const game = await GlobalGame.findById(userGame.gameId);
   if (!game) {
     throw ApiError.notFound("GAME_NOT_FOUND", "Game not found");
   }
-  return { ...userGame.toObject(), game } as UserGameDocument & {
-    game: GlobalGameDocument;
-  };
+  return { ...userGame.toObject(), game };
 }
 
 export async function createGame(
   input: { userId: string } & CreateGameData,
-): Promise<UserGameDocument & { game: GlobalGameDocument }> {
+): Promise<UserGameWithGame> {
   let globalGame: GlobalGameDocument | null;
 
   if (input.gameId) {
@@ -221,6 +221,21 @@ export async function createGame(
         publishers: input.game.publishers ?? [],
         releaseDate: input.game.releaseDate,
         summary: input.game.summary,
+      }).catch(async (error: unknown) => {
+        // Concurrent creation raced with another request; the unique
+        // partial index on {name} for manual games resolves the winner.
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          (error as { code?: number }).code === 11000
+        ) {
+          const winner = await GlobalGame.findOne({
+            name: input.game?.name,
+            source: "manual",
+          });
+          if (winner) return winner;
+        }
+        throw error;
       }));
   } else {
     throw ApiError.badRequest("VALIDATION_ERROR", "Either gameId or game is required");
@@ -251,16 +266,14 @@ export async function createGame(
     throw error;
   }
 
-  return { ...userGame.toObject(), game: globalGame } as UserGameDocument & {
-    game: GlobalGameDocument;
-  };
+  return { ...userGame.toObject(), game: globalGame };
 }
 
 export async function updateGame(
   userId: string,
   gameId: string,
   input: UpdateGameData,
-): Promise<UserGameDocument & { game: GlobalGameDocument }> {
+): Promise<UserGameWithGame> {
   const userGame = await findOwnedUserGameOrThrow(userId, gameId);
 
   const personalUpdates: Partial<UserGameDocument> = {};
@@ -286,17 +299,22 @@ export async function updateGame(
         "Metadata can only be edited on manually created games",
       );
     }
-    for (const [field, value] of Object.entries(input.game)) {
-      if (value === undefined) continue;
-      (globalGame as unknown as Record<string, unknown>)[field] = value;
+    const metadata = input.game;
+    if (metadata.name !== undefined) globalGame.name = metadata.name;
+    if (metadata.cover !== undefined) globalGame.cover = metadata.cover;
+    if (metadata.genres !== undefined) globalGame.genres = metadata.genres;
+    if (metadata.platforms !== undefined) globalGame.platforms = metadata.platforms;
+    if (metadata.developers !== undefined) globalGame.developers = metadata.developers;
+    if (metadata.publishers !== undefined) globalGame.publishers = metadata.publishers;
+    if (metadata.releaseDate !== undefined) {
+      globalGame.releaseDate = metadata.releaseDate ?? undefined;
     }
+    if (metadata.summary !== undefined) globalGame.summary = metadata.summary;
     await globalGame.save();
   }
 
   const game = await GlobalGame.findById(userGame.gameId);
-  return { ...userGame.toObject(), game: game! } as UserGameDocument & {
-    game: GlobalGameDocument;
-  };
+  return { ...userGame.toObject(), game: game! };
 }
 
 export async function deleteGame(userId: string, gameId: string): Promise<void> {

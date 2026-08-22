@@ -5,24 +5,32 @@ const statusEnum = z.enum(GAME_STATUSES);
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, "must be a valid id");
 
+const gameMetadataBase = {
+  cover: z.string().trim().max(2048).optional(),
+  genres: z.array(z.string().trim().min(1)).max(50).optional(),
+  platforms: z.array(z.string().trim().min(1)).max(50).optional(),
+  developers: z.array(z.string().trim().min(1)).max(50).optional(),
+  publishers: z.array(z.string().trim().min(1)).max(50).optional(),
+  summary: z.string().trim().max(20000).optional(),
+};
+
+const personalFieldsBase = {
+  status: statusEnum.optional(),
+  hoursPlayed: z.number().min(0).max(100000).optional(),
+  timesFinished: z.number().int().min(0).max(10000).optional(),
+};
+
 export const createGameSchema = z
   .object({
     gameId: objectId.optional(),
     game: z
       .object({
         name: z.string().trim().min(1).max(255),
-        cover: z.string().trim().max(2048).optional(),
-        genres: z.array(z.string().trim().min(1)).max(50).optional(),
-        platforms: z.array(z.string().trim().min(1)).max(50).optional(),
-        developers: z.array(z.string().trim().min(1)).max(50).optional(),
-        publishers: z.array(z.string().trim().min(1)).max(50).optional(),
+        ...gameMetadataBase,
         releaseDate: z.coerce.date().optional(),
-        summary: z.string().trim().max(20000).optional(),
       })
       .optional(),
-    status: statusEnum.optional(),
-    hoursPlayed: z.number().min(0).max(100000).optional(),
-    timesFinished: z.number().int().min(0).max(10000).optional(),
+    ...personalFieldsBase,
     rating: z.number().min(0).max(10).optional(),
     review: z.string().trim().max(20000).optional(),
   })
@@ -35,18 +43,11 @@ export const updateGameSchema = z
     game: z
       .object({
         name: z.string().trim().min(1).max(255).optional(),
-        cover: z.string().trim().max(2048).optional(),
-        genres: z.array(z.string().trim().min(1)).max(50).optional(),
-        platforms: z.array(z.string().trim().min(1)).max(50).optional(),
-        developers: z.array(z.string().trim().min(1)).max(50).optional(),
-        publishers: z.array(z.string().trim().min(1)).max(50).optional(),
+        ...gameMetadataBase,
         releaseDate: z.coerce.date().nullable().optional(),
-        summary: z.string().trim().max(20000).optional(),
       })
       .optional(),
-    status: statusEnum.optional(),
-    hoursPlayed: z.number().min(0).max(100000).optional(),
-    timesFinished: z.number().int().min(0).max(10000).optional(),
+    ...personalFieldsBase,
     rating: z.number().min(0).max(10).nullable().optional(),
     review: z.string().trim().max(20000).nullable().optional(),
   })

@@ -31,6 +31,7 @@ router.get(
 );
 router.get("/games/:gameId", validate({ params: gameIdParamSchema }), getOne);
 router.patch("/games/:gameId", validate({ body: updateGameSchema }), update);
+router.put("/games/:gameId", validate({ body: updateGameSchema }), update);
 router.delete("/games/:gameId", validate({ params: gameIdParamSchema }), remove);
 
 export default router;
