@@ -136,11 +136,13 @@ async function findOwnedUserGameOrThrow(
   return userGame;
 }
 
-export async function listGames(
+export async function resolveGameQuery(
   userId: string,
-  filters: ListGamesFilters,
-): Promise<PaginatedUserGame> {
-  const globalFilter = buildGlobalGameFilters(filters);
+  filters: Omit<ListGamesFilters, "page" | "limit">,
+): Promise<FilterQuery<UserGameDocument>> {
+  const globalFilter = buildGlobalGameFilters(
+    filters as ListGamesFilters,
+  );
   let matchingGameIds: Types.ObjectId[] | null = null;
 
   if (Object.keys(globalFilter).length > 0) {
@@ -148,10 +150,21 @@ export async function listGames(
     matchingGameIds = games.map((game) => game._id as Types.ObjectId);
   }
 
-  const query = buildFilters(userId, filters);
+  const query = buildFilters(
+    userId,
+    { ...filters, page: 1, limit: 1 } as ListGamesFilters,
+  );
   if (matchingGameIds) {
     query.gameId = { $in: matchingGameIds };
   }
+  return query;
+}
+
+export async function listGames(
+  userId: string,
+  filters: ListGamesFilters,
+): Promise<PaginatedUserGame> {
+  const query = await resolveGameQuery(userId, filters);
 
   const [total, userGames] = await Promise.all([
     UserGame.countDocuments(query),
