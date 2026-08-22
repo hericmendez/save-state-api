@@ -5,7 +5,7 @@ import { ApiError } from "../utils/api-error";
 import { GlobalGame, type GlobalGameDocument } from "../models/game";
 import { UserGame, type UserGameDocument } from "../models/user-game";
 
-type ListGamesFilters = {
+export type ListGamesFilters = {
   page: number;
   limit: number;
   search?: string;
