@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes";
+import gameRoutes from "./routes/game.routes";
 import { ApiError } from "./utils/api-error";
 import { errorMiddleware } from "./middleware/error.middleware";
 
@@ -11,6 +12,7 @@ export function createApp() {
   app.use(cookieParser());
 
   app.use("/api", authRoutes);
+  app.use("/api", gameRoutes);
 
   app.get("/api/health", (_req, res) => {
     res.status(200).json({ status: "ok" });
