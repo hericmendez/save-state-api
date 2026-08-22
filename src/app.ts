@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import authRoutes from "./routes/auth.routes";
 import { ApiError } from "./utils/api-error";
 import { errorMiddleware } from "./middleware/error.middleware";
 
@@ -8,6 +9,8 @@ export function createApp() {
 
   app.use(express.json());
   app.use(cookieParser());
+
+  app.use("/api", authRoutes);
 
   app.get("/api/health", (_req, res) => {
     res.status(200).json({ status: "ok" });
