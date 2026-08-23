@@ -106,11 +106,6 @@ export default function Dashboard() {
   if (error) return <p className="text-red-600">{error}</p>;
   if (!data) return <p className="text-gray-500">Carregando dashboard…</p>;
 
-  const pct =
-    data.completionRate == null
-      ? "—"
-      : `${Math.round(data.completionRate * 100)}%`;
-
   return (
     <div className="flex flex-col gap-4">
       <section className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
@@ -124,16 +119,9 @@ export default function Dashboard() {
         </div>
         <div className={cardCls}>
           <h3 className="m-0 mb-1 text-sm font-semibold text-gray-600">
-            Taxa de conclusão
+            Jogos concluídos
           </h3>
-          <p className="m-0 text-3xl font-bold">{pct}</p>
-          <p className="m-0 text-gray-500">zerados / (jogando + dropados)</p>
-        </div>
-        <div className={cardCls}>
-          <h3 className="m-0 mb-1 text-sm font-semibold text-gray-600">
-            Jogos zerados
-          </h3>
-          <p className="m-0 text-3xl font-bold">{data.finishedCounts.total}</p>
+          <p className="m-0 text-3xl font-bold">{data.completedCounts.total}</p>
           <p className="m-0 text-gray-500">
             favorito: {data.favoritePlatforms[0]?.label ?? "—"} ·{" "}
             {data.favoriteGenres[0]?.label ?? "—"}
@@ -167,15 +155,35 @@ export default function Dashboard() {
           ))}
         </section>
 
+        <section className={cardCls}>
+          <h2 className={titleCls}>Jogos por status</h2>
+          {data.gamesByStatus.every((s) => s.value === 0) && (
+            <p className="text-gray-500">Sem dados.</p>
+          )}
+          {data.gamesByStatus.map((s) => (
+            <Bar
+              key={s.label}
+              label={
+                Status[s.label.toUpperCase() as keyof typeof Status] ?? s.label
+              }
+              value={s.value}
+              max={Math.max(1, ...data.gamesByStatus.map((g) => g.value))}
+            />
+          ))}
+        </section>
+
         <CountList
-          title="Zerados por ano"
-          items={data.finishedCounts.byYear.slice(0, 10)}
+          title="Concluídos por ano"
+          items={data.completedCounts.byYear.slice(0, 10)}
         />
         <CountList
-          title="Zerados por plataforma"
-          items={data.finishedCounts.byPlatform}
+          title="Concluídos por plataforma"
+          items={data.completedCounts.byPlatform}
         />
-        <CountList title="Zerados por gênero" items={data.finishedCounts.byGenre} />
+        <CountList
+          title="Concluídos por gênero"
+          items={data.completedCounts.byGenre}
+        />
       </div>
     </div>
   );

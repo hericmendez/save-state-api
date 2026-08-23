@@ -30,7 +30,7 @@ beforeAll(async () => {
         publishers: ["Nintendo"],
         releaseDate: "1986-06-06",
       },
-      status: "finished" as const,
+      status: "replaying" as const,
       hoursPlayed: 10,
       timesFinished: 1,
       rating: 8,
@@ -69,7 +69,7 @@ describe("Dashboard / Stats", () => {
   it("returns distributions", async () => {
     const res = await agent.get("/api/games/stats");
     const data = res.body.data;
-    expect(data.byStatus).toEqual({ finished: 1, playing: 1 });
+    expect(data.byStatus).toEqual({ replaying: 1, playing: 1 });
     expect(data.byGenre).toEqual({ RPG: 1, Action: 1 });
     expect(data.byPlatform).toEqual({ NES: 1, PS1: 1 });
     expect(data.byDeveloper).toEqual({ Nintendo: 1, Konami: 1 });

@@ -3,8 +3,13 @@ import mongoose, { Schema, Types } from "mongoose";
 export const GAME_STATUSES = [
   "backlog",
   "playing",
-  "finished",
+  "replaying",
+  "stalled",
   "dropped",
+  "limbo",
+  "endless",
+  "achievement",
+  "finished",
   "wishlist",
 ] as const;
 

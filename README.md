@@ -210,7 +210,7 @@ await fetch(`http://localhost:3000/api/games/${gameId}`, {
 });
 ```
 
-Campos pessoais aceitos: `status` (`backlog` | `playing` | `finished` | `dropped` | `wishlist`), `hoursPlayed`, `timesFinished`, `rating` (0–10), `review`. Campos de metadata dentro de `game`: `name`, `cover`, `genres`, `platforms`, `developers`, `publishers`, `releaseDate`, `summary`.
+Campos pessoais aceitos: `status` (`backlog` | `playing` | `replaying` | `stalled` | `dropped` | `limbo` | `endless` | `achievement` | `finished` | `wishlist`), `hoursPlayed`, `timesFinished`, `rating` (0–10), `review`. Campos de metadata dentro de `game`: `name`, `cover`, `genres`, `platforms`, `developers`, `publishers`, `releaseDate`, `summary`.
 
 ### DELETE /api/games/:gameId
 

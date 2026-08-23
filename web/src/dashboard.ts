@@ -1,7 +1,14 @@
 export const Status = {
+  BACKLOG: "backlog",
   PLAYING: "playing",
-  FINISHED: "finished",
+  REPLAYING: "replaying",
+  STALLED: "stalled",
   DROPPED: "dropped",
+  LIMBO: "limbo",
+  ENDLESS: "endless",
+  ACHIEVEMENT: "achievement",
+  FINISHED: "finished",
+  WISHLIST: "wishlist",
 } as const;
 
 export type StatusValue = (typeof Status)[keyof typeof Status];
@@ -28,8 +35,8 @@ export interface DashboardData {
   favoritePlatforms: Distribution[];
   totalHours: number;
   hoursByStatus: Distribution[];
-  completionRate: number | null;
-  finishedCounts: {
+  gamesByStatus: Distribution[];
+  completedCounts: {
     total: number;
     byYear: Distribution[];
     byPlatform: Distribution[];
@@ -72,15 +79,10 @@ export function buildDashboard(games: DashboardGame[]): DashboardData {
     byStatusCount.set(s, (byStatusCount.get(s) ?? 0) + 1);
   }
 
-  const playing = byStatusCount.get(Status.PLAYING) ?? 0;
-  const finished = byStatusCount.get(Status.FINISHED) ?? 0;
-  const dropped = byStatusCount.get(Status.DROPPED) ?? 0;
-  const completionRate = playing + dropped > 0 ? finished / (playing + dropped) : null;
-
-  const finishedGames = tracked.filter((g) => g.status === Status.FINISHED);
+  const completedGames = tracked.filter((g) => (g.timesFinished ?? 0) > 0);
 
   const byYear = new Map<number, number>();
-  for (const g of finishedGames) {
+  for (const g of completedGames) {
     if (g.releaseYear == null) continue;
     byYear.set(g.releaseYear, (byYear.get(g.releaseYear) ?? 0) + 1);
   }
@@ -98,14 +100,17 @@ export function buildDashboard(games: DashboardGame[]): DashboardData {
       label: s,
       value: byStatusHours.get(s) ?? 0,
     })),
-    completionRate,
-    finishedCounts: {
-      total: finishedGames.length,
+    gamesByStatus: [...Object.values(Status)].map((s) => ({
+      label: s,
+      value: byStatusCount.get(s) ?? 0,
+    })),
+    completedCounts: {
+      total: completedGames.length,
       byYear: [...byYear.entries()]
         .map(([label, value]) => ({ label: String(label), value }))
         .sort((a, b) => Number(b.label) - Number(a.label)),
-      byPlatform: sumBy(finishedGames, (g) => g.platforms ?? []),
-      byGenre: sumBy(finishedGames, (g) => g.genres ?? []),
+      byPlatform: sumBy(completedGames, (g) => g.platforms ?? []),
+      byGenre: sumBy(completedGames, (g) => g.genres ?? []),
     },
   };
 }

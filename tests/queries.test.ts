@@ -30,7 +30,7 @@ beforeAll(async () => {
         publishers: ["Nintendo"],
         releaseDate: "1986-02-21",
       },
-      status: "finished" as const,
+      status: "limbo" as const,
       hoursPlayed: 20,
       timesFinished: 2,
       rating: 9,
