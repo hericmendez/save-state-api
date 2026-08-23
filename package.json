@@ -4,7 +4,9 @@
   "description": "Save State API - backend for the Save State game library",
   "main": "dist/server.js",
   "scripts": {
-"dev": "tsx watch --env-file=.env src/server.ts",
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "mongo:dev": "mkdir -p .mongo-dev && (mongod --port 27018 --dbpath .mongo-dev --fork --logpath .mongo-dev/mongod.log || true)",
+    "dev:all": "pnpm mongo:dev && pnpm dev",
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
