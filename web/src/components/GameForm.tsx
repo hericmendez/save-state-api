@@ -20,6 +20,13 @@ export interface GameFormState {
   status: string;
   hoursPlayed: string;
   rating: string;
+  cover: string;
+  releaseDate: string;
+  genres: string;
+  platforms: string;
+  developers: string;
+  publishers: string;
+  summary: string;
 }
 
 interface Props {
@@ -32,6 +39,13 @@ interface Props {
   onCancelEdit: () => void;
 }
 
+function splitList(value: string): string[] {
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export default function GameForm({
   editingId,
   form,
@@ -41,6 +55,9 @@ export default function GameForm({
   onSubmit,
   onCancelEdit,
 }: Props) {
+  const set = (key: keyof GameFormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm({ ...form, [key]: e.target.value });
+
   return (
     <form onSubmit={onSubmit} className={cardCls}>
       <h2 className="text-base font-bold">
@@ -57,7 +74,7 @@ export default function GameForm({
           required
           className={inputCls}
           value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          onChange={set("name")}
         />
       </label>
       <label className={labelCls}>
@@ -74,28 +91,97 @@ export default function GameForm({
           ))}
         </select>
       </label>
-      <label className={labelCls}>
-        Horas jogadas
-        <input
-          type="number"
-          min={0}
-          className={inputCls}
-          value={form.hoursPlayed}
-          onChange={(e) => setForm({ ...form, hoursPlayed: e.target.value })}
-        />
-      </label>
-      <label className={labelCls}>
-        Nota (0–10)
-        <input
-          type="number"
-          min={0}
-          max={10}
-          step={0.1}
-          className={inputCls}
-          value={form.rating}
-          onChange={(e) => setForm({ ...form, rating: e.target.value })}
-        />
-      </label>
+      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+        <label className={labelCls}>
+          Horas jogadas
+          <input
+            type="number"
+            min={0}
+            className={inputCls}
+            value={form.hoursPlayed}
+            onChange={set("hoursPlayed")}
+          />
+        </label>
+        <label className={labelCls}>
+          Nota (0–10)
+          <input
+            type="number"
+            min={0}
+            max={10}
+            step={0.1}
+            className={inputCls}
+            value={form.rating}
+            onChange={set("rating")}
+          />
+        </label>
+        <label className={labelCls}>
+          Lançamento
+          <input
+            type="date"
+            className={inputCls}
+            value={form.releaseDate}
+            onChange={set("releaseDate")}
+          />
+        </label>
+      </div>
+      <details className="grid gap-3">
+        <summary className="cursor-pointer text-sm font-semibold text-gray-600">
+          Metadados do jogo (capa, gêneros, plataformas…)
+        </summary>
+        <label className={labelCls}>
+          URL da capa
+          <input
+            type="url"
+            placeholder="https://…"
+            className={inputCls}
+            value={form.cover}
+            onChange={set("cover")}
+          />
+        </label>
+        <label className={labelCls}>
+          Gêneros (separados por vírgula)
+          <input
+            className={inputCls}
+            placeholder="RPG, Action"
+            value={form.genres}
+            onChange={set("genres")}
+          />
+        </label>
+        <label className={labelCls}>
+          Plataformas (separadas por vírgula)
+          <input
+            className={inputCls}
+            placeholder="NES, PS1"
+            value={form.platforms}
+            onChange={set("platforms")}
+          />
+        </label>
+        <label className={labelCls}>
+          Desenvolvedores (separados por vírgula)
+          <input
+            className={inputCls}
+            value={form.developers}
+            onChange={set("developers")}
+          />
+        </label>
+        <label className={labelCls}>
+          Publishers (separadas por vírgula)
+          <input
+            className={inputCls}
+            value={form.publishers}
+            onChange={set("publishers")}
+          />
+        </label>
+        <label className={labelCls}>
+          Sinopse
+          <textarea
+            rows={3}
+            className={inputCls}
+            value={form.summary}
+            onChange={set("summary")}
+          />
+        </label>
+      </details>
       <div>
         <button type="submit" className={btn}>
           {editingId ? "Salvar" : "Adicionar"}
@@ -109,3 +195,5 @@ export default function GameForm({
     </form>
   );
 }
+
+export { splitList };

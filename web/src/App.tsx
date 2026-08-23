@@ -3,7 +3,7 @@ import { api, ApiRequestError, type Game, type GameList, type SafeUser } from ".
 import AuthForm, { type AuthFormState } from "./components/AuthForm";
 import Dashboard from "./Dashboard";
 import GameDetail from "./components/GameDetail";
-import GameForm, { type GameFormState } from "./components/GameForm";
+import GameForm, { splitList, type GameFormState } from "./components/GameForm";
 import ListsSection from "./components/ListsSection";
 import Header, { BackButton, HeaderUser } from "./components/Header";
 import Message from "./components/Message";
@@ -27,6 +27,13 @@ const emptyGameForm: GameFormState = {
   status: "backlog",
   hoursPlayed: "",
   rating: "",
+  cover: "",
+  releaseDate: "",
+  genres: "",
+  platforms: "",
+  developers: "",
+  publishers: "",
+  summary: "",
 };
 
 export default function App() {
@@ -191,8 +198,17 @@ export default function App() {
 
   async function handleCreateOrUpdate(e: React.FormEvent) {
     e.preventDefault();
+    const game: Record<string, unknown> = { name: form.name };
+    if (form.cover.trim()) game.cover = form.cover.trim();
+    if (form.releaseDate) game.releaseDate = form.releaseDate;
+    if (splitList(form.genres).length) game.genres = splitList(form.genres);
+    if (splitList(form.platforms).length) game.platforms = splitList(form.platforms);
+    if (splitList(form.developers).length) game.developers = splitList(form.developers);
+    if (splitList(form.publishers).length) game.publishers = splitList(form.publishers);
+    if (form.summary.trim()) game.summary = form.summary.trim();
+
     const payload: Record<string, unknown> = {
-      game: { name: form.name },
+      game,
       status: form.status,
     };
     if (form.hoursPlayed !== "") payload.hoursPlayed = Number(form.hoursPlayed);
@@ -227,6 +243,13 @@ export default function App() {
         status: g.status ?? "backlog",
         hoursPlayed: g.hoursPlayed != null ? String(g.hoursPlayed) : "",
         rating: g.rating != null ? String(g.rating) : "",
+        cover: g.game?.cover ?? "",
+        releaseDate: g.game?.releaseDate ? g.game.releaseDate.slice(0, 10) : "",
+        genres: (g.game?.genres ?? []).join(", "),
+        platforms: (g.game?.platforms ?? []).join(", "),
+        developers: (g.game?.developers ?? []).join(", "),
+        publishers: (g.game?.publishers ?? []).join(", "),
+        summary: g.game?.summary ?? "",
       });
     } catch (err) {
       onError(err);

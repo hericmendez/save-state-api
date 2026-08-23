@@ -15,8 +15,13 @@ export interface Game {
   game: {
     _id?: string;
     name: string;
+    cover?: string | null;
     genres?: string[];
     platforms?: string[];
+    developers?: string[];
+    publishers?: string[];
+    releaseDate?: string | null;
+    summary?: string | null;
   } | null;
 }
 
