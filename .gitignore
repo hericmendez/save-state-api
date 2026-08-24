@@ -5,3 +5,4 @@ dist/
 .DS_Store
 .mongo-dev/
 *.tsbuildinfo
+.mongo-dev/

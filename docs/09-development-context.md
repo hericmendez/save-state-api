@@ -1,19 +1,17 @@
 # 09 — Contexto de Desenvolvimento
 
 > Registro do estado atual do projeto para retomada futura. Complementa os docs
-> 01–08 (que permanecem a especificação/fonte da verdade). Última atualização: 2026-08-22.
+> 01–08 (que permanecem a especificação/fonte da verdade). Última atualização: 2026-08-23.
 
 ## Status da dívida técnica (atualizado)
 
 Corrigido nesta iteração:
-1. ✅ Casts de query/body/params nos controllers → middleware `validate` agora grava em `req.validated` e os controllers usam o helper tipado `validated<T>(req, part)` (`src/middleware/validation.middleware.ts`)
-2. ✅ Casts residuais em `createGame`/`updateGame`/`getGame`/`listGames` → tipo unificado `UserGameWithGame`; atribuição de metadata agora campo a campo, sem casts (`src/services/game.service.ts`)
-3. ✅ Race condition no dedupe do GlobalGame → índice único parcial `{ name: 1 }` com `partialFilterExpression: { source: "manual" }` no model + catch de E11000 que re-busca o registro vencedor. O índice simples antigo de `name` foi removido para evitar warning de índice duplicado
-4. ✅ Cookie `maxAge` agora derivado de `JWT_EXPIRES_IN` (parser s/m/h/d) — `auth.middleware.ts`
-5. ✅ Metadata Zod deduplicada via `gameMetadataBase` / `personalFieldsBase` (`src/schemas/game.schema.ts`)
-6. ✅ Rate limiting in-memory nas rotas de register/login (20 req/15min por IP+path; desativado quando `NODE_ENV=test`) — `src/middleware/rate-limit.middleware.ts`, `ApiError.tooManyRequests` (429)
-7. ✅ `.env.example` criado; `package-lock.json` residual removido
-8. ➕ Rota `PUT /api/games/:gameId` adicionada como alias do PATCH
+1. ✅ Enum de status expandido para 10 valores: `backlog`, `playing`, `replaying`, `stalled`, `dropped`, `limbo`, `endless`, `achievement`, `finished`, `wishlist` (`src/models/user-game.ts`; espelhado no `GameForm.tsx` e `dashboard.ts` do web)
+2. ✅ Dashboard com métricas por status: "Horas por status" e nova seção "Jogos por status" (contagem); métricas de concluídos agora baseadas em `timesFinished > 0` (não dependem do status `finished`) — removida a "taxa de conclusão"
+3. ✅ CORS configurado para o frontend (`origin: http://localhost:5173`, `credentials: true`) — `src/app.ts`
+4. ✅ Formulário web edita metadados manualmente (capa, lançamento, gêneros, plataformas, devs, publishers, sinopse) no POST/PUT; pré-preenchido ao editar
+5. ✅ Script de seed `scripts/seed.ts`: usuário demo `demo@save-state.dev` / `demo12345`, 5 listas e 30 jogos reais distribuídos entre elas (todo jogo em ≥1 lista; cobre todos os 10 status). Idempotente; rodar com `pnpm exec tsx scripts/seed.ts`
+6. ✅ Scripts npm: `mongo:dev` (sobe mongod sem auth na porta 27018, dbpath `.mongo-dev/`) e `dev:all`
 
 Pendente (decisão futura):
 - Performance do `$lookup/$unwind` do stats sobre toda a biblioteca filtrada
@@ -102,16 +100,12 @@ Vitest + Supertest + MongoMemoryServer; helpers centralizados em `tests/helpers.
 
 Scripts: `dev` (tsx watch --env-file=.env), `build`, `start`, `typecheck`, `test`.
 
-## Dívida técnica conhecida (tabela do README)
+## Dívida técnica conhecida
 
-1. Casts `req.query as unknown as ...` nos controllers (express@5 perde tipos)
-2. Casts residuais em create/updateGame (`src/services/game.service.ts:254,297`)
-3. **Race condition potencial**: dedupe manual do GlobalGame por `name + source:"manual"` (`game.service.ts:207-210`) sem unique index funcional em name/slug; slug com `Date.now()` mitiga parcialmente
-4. Cookie `maxAge` hardcoded 7d em vez de derivar de `JWT_EXPIRES_IN` (`auth.middleware.ts:38`)
-5. Metadata Zod duplicada entre create/update schemas (`src/schemas/game.schema.ts`)
-6. Sem rate limiting nas rotas de auth (risco antes de exposição pública)
-7. Stats `$lookup/$unwind` sobre toda a biblioteca filtrada — performance futura
-8. `.env.example` ausente
+Itens 1–6 e 8 da tabela original do README foram resolvidos em iterações anteriores
+(ver seção "Status da dívida técnica" acima). Restante:
+
+1. Stats `$lookup/$unwind` sobre toda a biblioteca filtrada — performance futura
 
 Outros: nenhum TODO/FIXME no código (dívida só no README); `dist/` presente localmente apesar do .gitignore.
 
