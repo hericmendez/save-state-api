@@ -22,8 +22,8 @@ Pendente (decisão futura):
 App Vite + React 18 (TypeScript), workspace pnpm configurado em `pnpm-workspace.yaml` (`packages: [., web]`). Estilização com **Tailwind CSS v4** (`@tailwindcss/vite` plugin em `vite.config.ts`; `styles.css` contém apenas `@import "tailwindcss"`).
 
 Rodar (2 terminais):
-- API: `pnpm dev` na raiz (porta 3000). Se o MongoDB local (27017) exigir auth, subir instância dev: `mongod --port 27018 --dbpath <dir>` e iniciar a API com `MONGODB_URI=mongodb://127.0.0.1:27018/save-state pnpm dev`
-- Web: `pnpm dev` dentro de `web/` (porta 5173, proxy `/api` → localhost:3000)
+- API: `pnpm dev` na raiz (porta 1337). Se o MongoDB local (27017) exigir auth, subir instância dev: `mongod --port 27018 --dbpath <dir>` e iniciar a API com `MONGODB_URI=mongodb://127.0.0.1:27018/save-state pnpm dev`
+- Web: `pnpm dev` dentro de `web/` (porta 5173, proxy `/api` → localhost:1337)
 
 Estrutura (modularizada por responsabilidade):
 - `src/api.ts` — cliente HTTP tipado (`request<T>`, `credentials: include`, unwrap `{ data }`)
@@ -84,7 +84,7 @@ Sem migrations — MongoDB sem schema rígido, índices declarados nos models.
 
 - JWT em cookie HTTP-only `token`; `requireAuth` injeta `req.user.id` (`src/middleware/auth.middleware.ts`)
 - Cookie: `secure` apenas em produção, `sameSite: lax`; senha com bcrypt (cost 10)
-- Env validado por Zod em `src/config/env.ts`: `NODE_ENV`, `PORT` (3000), `MONGODB_URI` (localhost/save-state), `JWT_SECRET` (mín. 32 chars — processo falha se inválido), `JWT_EXPIRES_IN` ("7d")
+- Env validado por Zod em `src/config/env.ts`: `NODE_ENV`, `PORT` (1337), `MONGODB_URI` (localhost/save-state), `JWT_SECRET` (mín. 32 chars — processo falha se inválido), `JWT_EXPIRES_IN` ("7d")
 - `.env` local existe com segredo placeholder; `.env.example` citado no README mas **não existe no repo**
 
 ## Erros e contratos

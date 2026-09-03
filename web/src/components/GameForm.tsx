@@ -1,3 +1,5 @@
+
+//src/components/GameForm.tsx
 import { btn, cardCls, inputCls, labelCls, mutedCls } from "../lib/ui";
 
 export const GAME_STATUSES = [

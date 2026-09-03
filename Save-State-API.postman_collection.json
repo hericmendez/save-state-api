@@ -1,0 +1,510 @@
+{
+  "info": {
+    "name": "Save State API",
+    "description": "Backend da Save State — biblioteca de jogos com listas, filtros e dashboard.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:1337"
+    },
+    {
+      "key": "gameId",
+      "value": ""
+    },
+    {
+      "key": "listId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Seu Nome\",\n  \"email\": \"voce@exemplo.com\",\n  \"password\": \"minhasenha123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login sets cookie', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data).to.have.property('email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"voce@exemplo.com\",\n  \"password\": \"minhasenha123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Name",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Novo Nome\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"minhasenha123\",\n  \"newPassword\": \"novasenha456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "change-password"]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"voce@exemplo.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "forgot-password"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"token-recebido-por-email\",\n  \"password\": \"novasenha456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Export JSON",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/export",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "export"]
+            }
+          }
+        },
+        {
+          "name": "Export CSV",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/export/csv",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "export", "csv"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Games",
+      "item": [
+        {
+          "name": "List Games",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/games?page=1&limit=20&search=&listId=&genre=&platform=&developer=&publisher=&releaseDateFrom=&releaseDateTo=&hoursPlayedMin=&hoursPlayedMax=&timesFinishedMin=&timesFinishedMax=&ratingMin=&ratingMax=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Página (int ≥ 1)" },
+                { "key": "limit", "value": "20", "description": "Itens por página (1–100)" },
+                { "key": "search", "value": "", "description": "Busca por nome", "disabled": true },
+                { "key": "listId", "value": "", "description": "Filtrar por lista (ObjectId)", "disabled": true },
+                { "key": "genre", "value": "", "description": "Filtrar por gênero", "disabled": true },
+                { "key": "platform", "value": "", "description": "Filtrar por plataforma", "disabled": true },
+                { "key": "developer", "value": "", "description": "Filtrar por desenvolvedor", "disabled": true },
+                { "key": "publisher", "value": "", "description": "Filtrar por publicadora", "disabled": true },
+                { "key": "releaseDateFrom", "value": "", "description": "Data de lançamento mínima", "disabled": true },
+                { "key": "releaseDateTo", "value": "", "description": "Data de lançamento máxima", "disabled": true },
+                { "key": "hoursPlayedMin", "value": "", "description": "Horas jogadas mínimas (0–100000)", "disabled": true },
+                { "key": "hoursPlayedMax", "value": "", "description": "Horas jogadas máximas (0–100000)", "disabled": true },
+                { "key": "timesFinishedMin", "value": "", "description": "Vezes zerado mínimas (0–10000)", "disabled": true },
+                { "key": "timesFinishedMax", "value": "", "description": "Vezes zerado máximas (0–10000)", "disabled": true },
+                { "key": "ratingMin", "value": "", "description": "Nota mínima (0–10)", "disabled": true },
+                { "key": "ratingMax", "value": "", "description": "Nota máxima (0–10)", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Game",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"game\": {\n    \"name\": \"The Legend of Zelda: Ocarina of Time\",\n    \"genres\": [\"Action-Adventure\"],\n    \"platforms\": [\"N64\"],\n    \"developers\": [\"Nintendo EAD\"],\n    \"publishers\": [\"Nintendo\"],\n    \"releaseDate\": \"1998-11-21\"\n  },\n  \"status\": \"finished\",\n  \"hoursPlayed\": 32.5,\n  \"timesFinished\": 2,\n  \"rating\": 9.5,\n  \"review\": \"Um clássico.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/games",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games"]
+            }
+          }
+        },
+        {
+          "name": "Get Game Stats",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/games/stats?search=&listId=&genre=&platform=&developer=&publisher=&releaseDateFrom=&releaseDateTo=&hoursPlayedMin=&hoursPlayedMax=&timesFinishedMin=&timesFinishedMax=&ratingMin=&ratingMax=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games", "stats"],
+              "query": [
+                { "key": "search", "value": "", "description": "Busca por nome", "disabled": true },
+                { "key": "listId", "value": "", "description": "Filtrar por lista (ObjectId)", "disabled": true },
+                { "key": "genre", "value": "", "description": "Filtrar por gênero", "disabled": true },
+                { "key": "platform", "value": "", "description": "Filtrar por plataforma", "disabled": true },
+                { "key": "developer", "value": "", "description": "Filtrar por desenvolvedor", "disabled": true },
+                { "key": "publisher", "value": "", "description": "Filtrar por publicadora", "disabled": true },
+                { "key": "releaseDateFrom", "value": "", "description": "Data de lançamento mínima", "disabled": true },
+                { "key": "releaseDateTo", "value": "", "description": "Data de lançamento máxima", "disabled": true },
+                { "key": "hoursPlayedMin", "value": "", "description": "Horas jogadas mínimas", "disabled": true },
+                { "key": "hoursPlayedMax", "value": "", "description": "Horas jogadas máximas", "disabled": true },
+                { "key": "timesFinishedMin", "value": "", "description": "Vezes zerado mínimas", "disabled": true },
+                { "key": "timesFinishedMax", "value": "", "description": "Vezes zerado máximas", "disabled": true },
+                { "key": "ratingMin", "value": "", "description": "Nota mínima", "disabled": true },
+                { "key": "ratingMax", "value": "", "description": "Nota máxima", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Game",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/games/{{gameId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games", "{{gameId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Game (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"playing\",\n  \"hoursPlayed\": 10.5,\n  \"rating\": 8\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/games/{{gameId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games", "{{gameId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Game (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"finished\",\n  \"rating\": 9.5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/games/{{gameId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games", "{{gameId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Game",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/games/{{gameId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games", "{{gameId}}"]
+            }
+          }
+        },
+        {
+          "name": "Add Game to List",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/games/{{gameId}}/lists/{{listId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games", "{{gameId}}", "lists", "{{listId}}"]
+            }
+          }
+        },
+        {
+          "name": "Remove Game from List",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/games/{{gameId}}/lists/{{listId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "games", "{{gameId}}", "lists", "{{listId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Game Lists",
+      "item": [
+        {
+          "name": "List Game Lists",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/game-lists?page=1&limit=20&search=&withCount=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game-lists"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Página (int ≥ 1)" },
+                { "key": "limit", "value": "20", "description": "Itens por página (1–100)" },
+                { "key": "search", "value": "", "description": "Busca por nome", "disabled": true },
+                { "key": "withCount", "value": "false", "description": "Incluir contagem de jogos (true|false)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Game List",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Backlog\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/game-lists",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game-lists"]
+            }
+          }
+        },
+        {
+          "name": "Get Game List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/game-lists/{{listId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game-lists", "{{listId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Game List",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Backlog 2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/game-lists/{{listId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game-lists", "{{listId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Game List",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/game-lists/{{listId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game-lists", "{{listId}}"]
+            }
+          }
+        },
+        {
+          "name": "List Games in Game List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/game-lists/{{listId}}/games?page=1&limit=20&search=&genre=&platform=&developer=&publisher=&releaseDateFrom=&releaseDateTo=&hoursPlayedMin=&hoursPlayedMax=&timesFinishedMin=&timesFinishedMax=&ratingMin=&ratingMax=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game-lists", "{{listId}}", "games"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Página (int ≥ 1)" },
+                { "key": "limit", "value": "20", "description": "Itens por página (1–100)" },
+                { "key": "search", "value": "", "description": "Busca por nome", "disabled": true },
+                { "key": "genre", "value": "", "description": "Filtrar por gênero", "disabled": true },
+                { "key": "platform", "value": "", "description": "Filtrar por plataforma", "disabled": true },
+                { "key": "developer", "value": "", "description": "Filtrar por desenvolvedor", "disabled": true },
+                { "key": "publisher", "value": "", "description": "Filtrar por publicadora", "disabled": true },
+                { "key": "releaseDateFrom", "value": "", "description": "Data de lançamento mínima", "disabled": true },
+                { "key": "releaseDateTo", "value": "", "description": "Data de lançamento máxima", "disabled": true },
+                { "key": "hoursPlayedMin", "value": "", "description": "Horas jogadas mínimas", "disabled": true },
+                { "key": "hoursPlayedMax", "value": "", "description": "Horas jogadas máximas", "disabled": true },
+                { "key": "timesFinishedMin", "value": "", "description": "Vezes zerado mínimas", "disabled": true },
+                { "key": "timesFinishedMax", "value": "", "description": "Vezes zerado máximas", "disabled": true },
+                { "key": "ratingMin", "value": "", "description": "Nota mínima", "disabled": true },
+                { "key": "ratingMax", "value": "", "description": "Nota máxima", "disabled": true }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

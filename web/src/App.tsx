@@ -1,3 +1,5 @@
+//src/App.tsx
+
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiRequestError, type Game, type GameList, type SafeUser } from "./api";
 import AuthForm, { type AuthFormState } from "./components/AuthForm";

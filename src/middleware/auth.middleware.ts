@@ -2,11 +2,17 @@ import jwt from "jsonwebtoken";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../config/env";
 import { ApiError } from "../utils/api-error";
+import { User } from "../models/user";
 
 export const AUTH_COOKIE_NAME = "token";
 
 export interface AuthenticatedUser {
   id: string;
+}
+
+export interface JwtPayload {
+  userId: string;
+  sessionVersion: number;
 }
 
 declare module "express-serve-static-core" {
@@ -15,7 +21,7 @@ declare module "express-serve-static-core" {
   }
 }
 
-export function signToken(payload: { userId: string }): string {
+export function signToken(payload: { userId: string; sessionVersion: number }): string {
   return jwt.sign(payload, env.JWT_SECRET, {
     expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"],
   });
@@ -53,23 +59,43 @@ export function clearAuthCookie(res: Response): void {
   });
 }
 
-export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
+export async function requireAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
   try {
     const token = req.cookies?.[AUTH_COOKIE_NAME];
     if (!token) {
       throw ApiError.unauthorized();
     }
 
-    const payload = jwt.verify(token, env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.JWT_SECRET);
+    if (typeof decoded !== "object" || decoded === null) {
+      throw ApiError.unauthorized("Invalid authentication token");
+    }
+
+    const payload = decoded as Record<string, unknown>;
+
+    if (typeof payload.userId !== "string") {
+      throw ApiError.unauthorized("Invalid authentication token");
+    }
+
     if (
-      typeof payload !== "object" ||
-      payload === null ||
-      typeof (payload as { userId?: unknown }).userId !== "string"
+      typeof payload.sessionVersion !== "number" ||
+      !Number.isInteger(payload.sessionVersion) ||
+      payload.sessionVersion < 0
     ) {
       throw ApiError.unauthorized("Invalid authentication token");
     }
 
-    req.user = { id: (payload as { userId: string }).userId };
+    const user = await User.findById(payload.userId).select("sessionVersion").lean();
+    if (!user) {
+      throw ApiError.unauthorized("Invalid authentication token");
+    }
+
+    const currentVersion = user.sessionVersion ?? 0;
+    if (currentVersion !== payload.sessionVersion) {
+      throw ApiError.unauthorized("Invalid authentication token");
+    }
+
+    req.user = { id: payload.userId };
     next();
   } catch (error) {
     if (error instanceof ApiError) {

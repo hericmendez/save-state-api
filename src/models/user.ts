@@ -19,6 +19,10 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
+    sessionVersion: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -29,6 +33,7 @@ export interface UserDocument extends mongoose.Document {
   name: string;
   email: string;
   passwordHash: string;
+  sessionVersion: number;
   createdAt: Date;
   updatedAt: Date;
 }
